@@ -8,24 +8,27 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class QueensCollisionsTracker {
+public class CollisionsTracker {
     int boardSize;
     List<Integer> attacksDiagPositive;
     List<Integer> attacksDiagNegative;
 
     boolean enable3QueensInLineCheck;
 
-    public QueensCollisionsTracker(int boardSize, boolean enable3QueensInLineCheck) {
+    public CollisionsTracker(int boardSize, boolean enable3QueensInLineCheck, List<Integer> positions) {
         this.boardSize = boardSize;
         this.enable3QueensInLineCheck = enable3QueensInLineCheck;
 
         // Initialize diagonal attacks lookup arrays.
         this.attacksDiagPositive = new ArrayList<Integer>(Collections.nCopies(this.boardSize * 2 - 1, 0));
         this.attacksDiagNegative = new ArrayList<Integer>(Collections.nCopies(this.boardSize * 2 - 1, 0));
+
+        // Initialize attack tables.
+        this.recalculateAttacksTables(positions);
     }
 
-    public void recalculateAttacksTables() {
-        this.recalculateAttacksTables(new ArrayList<Integer>());
+    public CollisionsTracker(int boardSize, boolean enable3QueensInLineCheck) {
+        this(boardSize, enable3QueensInLineCheck, new ArrayList<Integer>());
     }
 
     public void recalculateAttacksTables(List<Integer> positions) {
@@ -36,15 +39,21 @@ public class QueensCollisionsTracker {
             int y = i;
             int x = positions.get(i);
 
-            var pair = SolverUtils.diagonalIndices(Pair.of(x, y), this.boardSize);
+            var pair = diagonalIndices(Pair.of(x, y));
 
             this.attacksDiagPositive.set(pair.getLeft(), this.attacksDiagPositive.get(pair.getLeft()) + 1);
             this.attacksDiagNegative.set(pair.getRight(), this.attacksDiagNegative.get(pair.getRight()) + 1);
         }
     }
 
+    public void recordDiagCollision(Pair<Integer, Integer> position, int d) {
+        var pair = diagonalIndices(position);
+        this.attacksDiagPositive.set(pair.getLeft(), this.attacksDiagPositive.get(pair.getLeft()) + d);
+        this.attacksDiagNegative.set(pair.getRight(), this.attacksDiagNegative.get(pair.getRight()) + d);
+    }
+
     public int countDiagAttacksAgainst(Pair<Integer, Integer> position) {
-        var pair = SolverUtils.diagonalIndices(position, this.boardSize);
+        var pair = diagonalIndices(position);
 
         return (this.attacksDiagPositive.get(pair.getLeft()) - 1) + (this.attacksDiagNegative.get(pair.getRight()) - 1);
     }
@@ -87,7 +96,7 @@ public class QueensCollisionsTracker {
             int oy = i;
             int ox = solution.get(i);
 
-            var hash = df.format(SolverUtils.slope(position, Pair.of(ox, oy)));
+            var hash = df.format(Utils.slope(position, Pair.of(ox, oy)));
             if (lineAttacksTable.contains(hash)) {
                 attacks += 1;
             }
@@ -97,7 +106,7 @@ public class QueensCollisionsTracker {
         return attacks;
     }
 
-    public int countCollisions(List<Integer> solution) {
+    public int countAllDiagAndLineCollisions(List<Integer> solution) {
         int collisions = 0;
 
         for (int i = 0; i < this.boardSize * 2 - 1; i++) {
@@ -118,9 +127,13 @@ public class QueensCollisionsTracker {
         return collisions;
     }
 
-    public void recordDiagCollision(Pair<Integer, Integer> position, int d) {
-        var pair = SolverUtils.diagonalIndices(position, this.boardSize);
-        this.attacksDiagPositive.set(pair.getLeft(), this.attacksDiagPositive.get(pair.getLeft()) + d);
-        this.attacksDiagNegative.set(pair.getRight(), this.attacksDiagNegative.get(pair.getRight()) + d);
+    private Pair<Integer, Integer> diagonalIndices(Pair<Integer, Integer> pos) {
+        int x = pos.getLeft();
+        int y = pos.getRight();
+
+        int lrIndex = x - y + this.boardSize - 1;
+        int rlIndex = x + y;
+
+        return Pair.of(lrIndex, rlIndex);
     }
 }

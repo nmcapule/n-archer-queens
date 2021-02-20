@@ -4,22 +4,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class SolverUtils {
+public class Utils {
     public static double slope(Pair<Integer, Integer> a, Pair<Integer, Integer> b) {
         double dx = a.getLeft() - b.getLeft();
         double dy = a.getRight() - b.getRight();
 
         return dx / dy;
-    }
-
-    public static Pair<Integer, Integer> diagonalIndices(Pair<Integer, Integer> pos, int boardSize) {
-        int x = pos.getLeft();
-        int y = pos.getRight();
-
-        int lrIndex = x - y + boardSize - 1;
-        int rlIndex = x + y;
-
-        return Pair.of(lrIndex, rlIndex);
     }
 
     public static void printChessboard(List<Integer> positions, int boardSize) {

@@ -6,19 +6,19 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import nq.solver.utils.QueensCollisionsTracker;
+import nq.solver.utils.CollisionsTracker;
 
 /**
  * Implements a gradient-based heuristic solver for the n-queens problem.
  * 
  * Based on: https://fizyka.umk.pl/~milosz/AlgIILab/10.1.1.57.4685.pdf
  */
-public class GradientHeuristicSolver {
+public class GradientHeuristicSolver implements Solver {
     int boardSize;
     boolean enable3QueensInLineCheck = false;
     List<Integer> solution;
 
-    QueensCollisionsTracker collisionsTracker;
+    CollisionsTracker collisionsTracker;
 
     public GradientHeuristicSolver(int boardSize, boolean enable3QueensInLineCheck) {
         this.boardSize = boardSize;
@@ -30,8 +30,7 @@ public class GradientHeuristicSolver {
             solution.set(i, i);
         }
 
-        this.collisionsTracker = new QueensCollisionsTracker(boardSize, enable3QueensInLineCheck);
-        this.collisionsTracker.recalculateAttacksTables(this.solution);
+        this.collisionsTracker = new CollisionsTracker(boardSize, enable3QueensInLineCheck, solution);
     }
 
     private Pair<Integer, Integer> positionOf(int index) {
@@ -90,7 +89,7 @@ public class GradientHeuristicSolver {
                 }
             }
 
-            if (this.collisionsTracker.countCollisions(this.solution) == 0) {
+            if (this.collisionsTracker.countAllDiagAndLineCollisions(this.solution) == 0) {
                 break;
             }
         }

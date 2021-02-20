@@ -5,22 +5,20 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import nq.solver.utils.QueensCollisionsTracker;
-import nq.solver.utils.SolverUtils;
+import nq.solver.utils.CollisionsTracker;
 
-public class BacktrackingSolver {
+public class BacktrackingSolver implements Solver {
     int boardSize;
     boolean enable3QueensInLineCheck = false;
     List<Integer> solution;
 
-    QueensCollisionsTracker collisionsTracker;
+    CollisionsTracker collisionsTracker;
 
     public BacktrackingSolver(int boardSize, boolean enable3QueensInLineCheck) {
         this.boardSize = boardSize;
         this.enable3QueensInLineCheck = enable3QueensInLineCheck;
 
-        this.collisionsTracker = new QueensCollisionsTracker(boardSize, enable3QueensInLineCheck);
-        this.collisionsTracker.recalculateAttacksTables();
+        this.collisionsTracker = new CollisionsTracker(boardSize, enable3QueensInLineCheck);
     }
 
     public List<Integer> solve() {
@@ -32,19 +30,23 @@ public class BacktrackingSolver {
 
         while (true) {
             int top = stack.peek();
-            if (this.collisionsTracker.countDiagAttacksAgainst(Pair.of(top, stack.size() - 1)) > 0
-                    || this.collisionsTracker.countCrossAttacksAgainst(stack, Pair.of(top, stack.size() - 1)) > 0
-                    || this.collisionsTracker.countLineAttacksAgainst(stack, Pair.of(top, stack.size() - 1)) > 0) {
+            int attacksAgainstTop = this.collisionsTracker.countDiagAttacksAgainst(Pair.of(top, stack.size() - 1))
+                    + this.collisionsTracker.countCrossAttacksAgainst(stack, Pair.of(top, stack.size() - 1))
+                    + this.collisionsTracker.countLineAttacksAgainst(stack, Pair.of(top, stack.size() - 1));
+
+            if (attacksAgainstTop > 0) {
                 while (stack.peek() == this.boardSize - 1) {
-                    int prev = stack.pop();
-                    this.collisionsTracker.recordDiagCollision(Pair.of(prev, stack.size()), -1);
+                    int prev = stack.peek();
+                    this.collisionsTracker.recordDiagCollision(Pair.of(prev, stack.size() - 1), -1);
+                    stack.pop();
                     if (stack.empty()) {
                         System.out.println("No solution found for N=" + this.boardSize);
                         return new Stack<Integer>();
                     }
                 }
-                int prev = stack.pop();
-                this.collisionsTracker.recordDiagCollision(Pair.of(prev, stack.size()), -1);
+                int prev = stack.peek();
+                this.collisionsTracker.recordDiagCollision(Pair.of(prev, stack.size() - 1), -1);
+                stack.pop();
 
                 int next = prev + 1;
                 stack.push(next);

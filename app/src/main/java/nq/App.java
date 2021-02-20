@@ -3,28 +3,78 @@
  */
 package nq;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Spec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.ParameterException;
+
+import java.util.concurrent.Callable;
+
 import nq.solver.BacktrackingSolver;
 import nq.solver.GradientHeuristicSolver;
-import nq.solver.utils.SolverUtils;
+import nq.solver.Solver;
+import nq.solver.utils.Utils;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
+@Command(name = "x3nqueens", mixinStandardHelpOptions = true, version = "0.1", description = """
+        Solves n-queens problem with additional constraint that no 3 queens in a straight line should exist.
+        """)
+public class App implements Callable<Integer> {
+    private int boardSize;
+
+    @Spec
+    CommandSpec spec;
+
+    @Parameters(index = "0", defaultValue = "8", description = """
+            Size of the board to solve. Must be >= 8 (or >= 4 if 3-queens-in-a-line check is disabled).
+            """)
+    public void setBoardSize(int boardSize) {
+        int sizeRequirement = 8;
+        if (this.disable3QueensCheck) {
+            sizeRequirement = 4;
+        }
+        if (boardSize < sizeRequirement) {
+            throw new ParameterException(spec.commandLine(), String
+                    .format("Invalid board size '%d'. The board size must be >= %d.", boardSize, sizeRequirement));
+        }
+        this.boardSize = boardSize;
+    }
+
+    @Option(names = { "-a", "--algorithm" }, description = "backtracking|gradient")
+    private String algorithm = "backtracking";
+
+    @Option(names = { "-x", "--no-3queens-check" }, description = "Disables 3-queens-in-a-line check.")
+    private boolean disable3QueensCheck = false;
+
+    @Option(names = { "-p", "--print-board" }, description = "Prints the solution as a board in the output.")
+    private boolean printSolutionBoard = true;
+
+    @Override
+    public Integer call() throws Exception {
+        Solver solver;
+        switch (this.algorithm) {
+            case "gradient":
+                solver = new GradientHeuristicSolver(this.boardSize, !this.disable3QueensCheck);
+                break;
+            case "backtracking":
+            default:
+                solver = new BacktrackingSolver(this.boardSize, !this.disable3QueensCheck);
+        }
+
+        var solution = solver.solve();
+
+        if (this.printSolutionBoard) {
+            Utils.printChessboard(solution, this.boardSize);
+        } else {
+            System.out.println(solution);
+        }
+        return 0;
     }
 
     public static void main(String[] args) {
-        int boardSize = 8;
-        if (args.length > 0) {
-            boardSize = Integer.parseInt(args[0]);
-        }
-
-        if (boardSize < 8) {
-            System.out.println("Board size < 8 do not have valid solutions.");
-            return;
-        }
-
-        // var solver = new BacktrackingSolver(boardSize, true);
-        var solver = new GradientHeuristicSolver(boardSize, true);
-        SolverUtils.printChessboard(solver.solve(), boardSize);
+        int exitCode = new CommandLine(new App()).execute(args);
+        System.exit(exitCode);
     }
 }

@@ -17,17 +17,26 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit test framework.
-    testImplementation 'junit:junit:4.13'
+    // Use JUnit5 test framework.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
 
     // Import Apache commons lang extension.
     implementation 'org.apache.commons:commons-lang3:3.11'
+
+    // Import picocli command line library.
+    implementation 'info.picocli:picocli:4.6.1'
 }
 
 application {
     // Define the main class for the application.
     mainClass = 'nq.App'
+}
+
+test {
+    // Enable JUnit 5 (Gradle 4.6+).
+    useJUnitPlatform()
 }
