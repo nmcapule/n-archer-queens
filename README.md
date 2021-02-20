@@ -1,5 +1,7 @@
 # N-Queens + no-3-queens-in-a-straight-line
 
+![GitHub Java CI](https://github.com/nmcapule/n-archer-queens/actions/workflows/gradle.yml/badge.svg)
+
 This is an implementation of an n-queens solver, but with additional constraint
 that there should be no 3 or more queens that align in a straight line.
 
