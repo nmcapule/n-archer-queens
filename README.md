@@ -30,7 +30,7 @@ that there should be no 3 or more queens that align in a straight line.
   # To run the solver with some arguments:
   $ ./gradlew run --args="-x -agradient 1000"
   # To run the tests:
-  $ ./gradlew run --info
+  $ ./gradlew test --info
   ```
 
 Here's how the `--help` command looks like:
