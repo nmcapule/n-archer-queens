@@ -24,7 +24,7 @@ public class GradientHeuristicSolver implements Solver {
         this.boardSize = boardSize;
         this.enable3QueensInLineCheck = enable3QueensInLineCheck;
 
-        // Init solution.
+        // Init solution with queens in the diagonals.
         this.solution = new ArrayList<Integer>(Collections.nCopies(this.boardSize, 0));
         for (int i = 0; i < this.boardSize; i++) {
             solution.set(i, i);
@@ -54,9 +54,12 @@ public class GradientHeuristicSolver implements Solver {
 
     public List<Integer> solve() {
         while (true) {
+            // Shuffle the initial solution as a starting point for the algorithm.
             Collections.shuffle(this.solution);
             this.collisionsTracker.recalculateAttacksTables(this.solution);
 
+            // For each queen pairs in the board, we will do a swap if it lowers the number
+            // of conflicts in the board after the swap.
             for (int i = 0; i < this.boardSize - 1; i++) {
                 for (int j = i + 1; j < this.boardSize; j++) {
 
@@ -89,6 +92,7 @@ public class GradientHeuristicSolver implements Solver {
                 }
             }
 
+            // Termination condition. If there are no more conflicts, we celebrate and terminate.
             if (this.collisionsTracker.countAllDiagAndLineCollisions(this.solution) == 0) {
                 break;
             }

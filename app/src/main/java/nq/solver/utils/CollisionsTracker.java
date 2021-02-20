@@ -10,7 +10,32 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class CollisionsTracker {
     int boardSize;
+
+    /** 
+     * Tracks the number of queens attacking a top-left to bottom-right diagonal (\). The indices
+     * are labeled from left to right. For example, with N=4:
+     * 
+     *  ```
+     *  3 4 5 6 
+     *  2 \ . \ .
+     *  1 . \ . \
+     *  0 \ . \ .
+     *    . \ . \
+     *  ```
+     */
     List<Integer> attacksDiagPositive;
+    /** 
+     * Tracks the number of queens attacking a top-right to bottom-left diagonal (/). The indices
+     * are labeled from left to right. For example, with N=4:
+     * 
+     *  ```
+     *    0 1 2 3
+     *  . / . / 4
+     *  / . / . 5
+     *  . / . / 6
+     *  / . / .
+     *  ```
+     */
     List<Integer> attacksDiagNegative;
 
     boolean enable3QueensInLineCheck;
@@ -31,6 +56,7 @@ public class CollisionsTracker {
         this(boardSize, enable3QueensInLineCheck, new ArrayList<Integer>());
     }
 
+    /** Given a list of positions, recalculate the diagonal attack lookup tables. */
     public void recalculateAttacksTables(List<Integer> positions) {
         Collections.fill(this.attacksDiagPositive, 0);
         Collections.fill(this.attacksDiagNegative, 0);
@@ -46,18 +72,21 @@ public class CollisionsTracker {
         }
     }
 
+    /** Given a position, modify the number of diagonal attacks on both sides in that position. */
     public void recordDiagCollision(Pair<Integer, Integer> position, int d) {
         var pair = diagonalIndices(position);
         this.attacksDiagPositive.set(pair.getLeft(), this.attacksDiagPositive.get(pair.getLeft()) + d);
         this.attacksDiagNegative.set(pair.getRight(), this.attacksDiagNegative.get(pair.getRight()) + d);
     }
 
+    /** Count the number of diagonal queen attacks on the given position. */
     public int countDiagAttacksAgainst(Pair<Integer, Integer> position) {
         var pair = diagonalIndices(position);
 
         return (this.attacksDiagPositive.get(pair.getLeft()) - 1) + (this.attacksDiagNegative.get(pair.getRight()) - 1);
     }
 
+    /** Count the number of crosswise queen attacks on the given position. */
     public int countCrossAttacksAgainst(List<Integer> solution, Pair<Integer, Integer> position) {
         int attacks = 0;
 
@@ -77,6 +106,7 @@ public class CollisionsTracker {
         return attacks;
     }
 
+    /** Count the number of 3-queens that are on the same straight line from the given position. */
     public int countLineAttacksAgainst(List<Integer> solution, Pair<Integer, Integer> position) {
         if (!this.enable3QueensInLineCheck) {
             return 0;
@@ -106,6 +136,7 @@ public class CollisionsTracker {
         return attacks;
     }
 
+    /** Given a solution, count the number of diagonal and 3-queens-in-a-line collisions. */
     public int countAllDiagAndLineCollisions(List<Integer> solution) {
         int collisions = 0;
 
@@ -127,6 +158,12 @@ public class CollisionsTracker {
         return collisions;
     }
 
+    /**
+     * Given a position pair (x, y), find its indices in the positive and negative diagonal
+     * conflicts lookup table.
+     * 
+     * @return a pair of integers where left is positive, right is negative diagonal index
+     */
     private Pair<Integer, Integer> diagonalIndices(Pair<Integer, Integer> pos) {
         int x = pos.getLeft();
         int y = pos.getRight();

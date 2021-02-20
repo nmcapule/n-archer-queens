@@ -18,7 +18,7 @@ import nq.solver.GradientHeuristicSolver;
 import nq.solver.Solver;
 import nq.solver.utils.Utils;
 
-@Command(name = "x3nqueens", mixinStandardHelpOptions = true, version = "0.1", description = """
+@Command(name = "nq", mixinStandardHelpOptions = true, version = "0.1", description = """
         Solves n-queens problem with additional constraint that no 3 queens in a straight line should exist.
         """)
 public class App implements Callable<Integer> {
@@ -54,6 +54,8 @@ public class App implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         Solver solver;
+
+        // Select algorithm to use for the solver.
         switch (this.algorithm) {
             case "gradient":
                 solver = new GradientHeuristicSolver(this.boardSize, !this.disable3QueensCheck);
@@ -63,13 +65,16 @@ public class App implements Callable<Integer> {
                 solver = new BacktrackingSolver(this.boardSize, !this.disable3QueensCheck);
         }
 
+        // Do the magic.
         var solution = solver.solve();
 
+        // Output the solution.
         if (this.printSolutionBoard) {
             Utils.printChessboard(solution, this.boardSize);
         } else {
             System.out.println(solution);
         }
+        
         return 0;
     }
 

@@ -29,12 +29,14 @@ public class BacktrackingSolver implements Solver {
         this.collisionsTracker.recordDiagCollision(Pair.of(0, stack.size() - 1), +1);
 
         while (true) {
+            // Check first if the queen at the latest/lowest row is in conflict with another.
             int top = stack.peek();
             int attacksAgainstTop = this.collisionsTracker.countDiagAttacksAgainst(Pair.of(top, stack.size() - 1))
                     + this.collisionsTracker.countCrossAttacksAgainst(stack, Pair.of(top, stack.size() - 1))
                     + this.collisionsTracker.countLineAttacksAgainst(stack, Pair.of(top, stack.size() - 1));
 
             if (attacksAgainstTop > 0) {
+                // Pop until we can find a row where we can move the queen to the next column.
                 while (stack.peek() == this.boardSize - 1) {
                     int prev = stack.peek();
                     this.collisionsTracker.recordDiagCollision(Pair.of(prev, stack.size() - 1), -1);
@@ -44,17 +46,22 @@ public class BacktrackingSolver implements Solver {
                         return new Stack<Integer>();
                     }
                 }
+
+                // Move the lowest queen in the board to the next position.
                 int prev = stack.peek();
                 this.collisionsTracker.recordDiagCollision(Pair.of(prev, stack.size() - 1), -1);
                 stack.pop();
-
                 int next = prev + 1;
                 stack.push(next);
                 this.collisionsTracker.recordDiagCollision(Pair.of(next, stack.size() - 1), +1);
             } else {
+                // Termination condition. If the latest placed queen is valid and at the end of the
+                // board, then we found our solution.
                 if (stack.size() == this.boardSize) {
                     break;
                 }
+
+                // Else, we push to the next row below and explore this branch.
                 int next = 0;
                 stack.push(next);
                 this.collisionsTracker.recordDiagCollision(Pair.of(next, stack.size() - 1), +1);
